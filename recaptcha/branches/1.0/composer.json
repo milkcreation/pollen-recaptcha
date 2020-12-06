@@ -24,6 +24,7 @@
   ],
   "require": {
     "composer/installers": "~1.0",
+    "google/recaptcha": "^1.2",
     "presstify/framework": ">=1.4"
   },
   "require-dev": {
