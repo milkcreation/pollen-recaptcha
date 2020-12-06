@@ -2,6 +2,7 @@
 
 namespace Pollen\Recaptcha\Field;
 
+use Exception;
 use Pollen\Recaptcha\Contracts\RecaptchaField as RecaptchaFieldContract;
 use Pollen\Recaptcha\Contracts\Recaptcha as RecaptchaManager;
 use tiFy\Field\FieldDriver;
@@ -23,34 +24,50 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @see https://developers.google.com/recaptcha/docs/display
-     *
-     * @return array {
-     * @var string $before Contenu placé avant le champ.
-     * @var string $after Contenu placé après le champ.
-     * @var string $name Clé d'indice de la valeur de soumission du champ.
-     * @var string $value Valeur courante de soumission du champ.
-     * @var array $attrs Attributs HTML du champ.
-     * @var array $viewer Liste des attributs de configuration du controleur de gabarit d'affichage.
-     * @var string $theme Couleur d'affichage du captcha. light|dark.
-     * @var string $sitekey Clé publique. Optionnel si l'API $recaptcha est active.
-     * @var string $secretkey Clé publique. Optionnel si l'API $recaptcha est active.
-     * }
+     * @inheritDoc
      */
     public function defaults(): array
     {
         return [
+            /**
+             * @var array $attrs Attributs HTML du champ.
+             */
             'attrs'     => [],
+            /**
+             * @var string $after Contenu placé après le champ.
+             */
             'after'     => '',
+            /**
+             * @var string $before Contenu placé avant le champ.
+             */
             'before'    => '',
-            'name'      => '',
-            'value'     => '',
+            /**
+             * @var array $viewer Liste des attributs de configuration du pilote d'affichage.
+             */
             'viewer'    => [],
+            /**
+             * @var string $name Clé d'indice de la valeur de soumission du champ
+             */
+            'name'      => '',
+            /**
+             * @var string $value Valeur courante de soumission du champ.
+             */
+            'value'     => '',
+            /**
+             * @var string $sitekey Clé publique. Optionnel si l'API $recaptcha est active.
+             */
             'sitekey'   => '',
+            /**
+             * @var string $secretkey Clé publique. Optionnel si l'API $recaptcha est active.
+             */
             'secretkey' => '',
+            /**
+             * @var string $theme Couleur d'affichage du captcha. light|dark.
+             */
             'theme'     => 'light',
+            /**
+             * @var int $tabindex Indice du champ dans le formulaire
+             */
             'tabindex'  => 0,
         ];
     }
@@ -65,6 +82,8 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
 
     /**
      * @inheritDoc
+     *
+     * @throws Exception
      */
     public function render(): string
     {
@@ -72,15 +91,15 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
             $this->set('attrs.id', 'Field-recapcha--' . $this->getIndex());
         }
 
-        $this->set('attrs.data-tabindex', $this->get('tabindex'));
+        $this->set('attrs.data-tabindex', $this->pull('tabindex'));
 
-        if (!$this->get('sitekey')) {
-            $this->set('sitekey', $this->recaptchaManager()->getSiteKey());
+        if (!$siteKey = $this->pull('sitekey')) {
+            $siteKey = $this->recaptchaManager()->getSiteKey();
         }
 
         $this->recaptchaManager()->addWidgetRender($this->get('attrs.id'), [
-            'sitekey' => $this->get('sitekey'),
-            'theme'   => $this->get('theme'),
+            'sitekey' => $siteKey,
+            'theme'   => $this->pull('theme'),
         ]);
 
         return parent::render();
@@ -91,6 +110,6 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
      */
     public function viewDirectory(): string
     {
-        return class_info($this)->getDirname() . '/views/';
+        return $this->recaptchaManager()->resources('views/field/recaptcha');
     }
 }

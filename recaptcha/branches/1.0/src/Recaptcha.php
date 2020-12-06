@@ -4,14 +4,17 @@ namespace Pollen\Recaptcha;
 
 use Exception;
 use Pollen\Recaptcha\Contracts\Recaptcha as RecaptchaContract;
+use Pollen\Recaptcha\Contracts\RecaptchaField as RecaptchaFieldContract;
+use Pollen\Recaptcha\Contracts\RecaptchaFormFieldDriver as RecaptchaFormFieldDriverContract;
 use Pollen\Recaptcha\Field\RecaptchaField;
+use Pollen\Recaptcha\Form\RecaptchaFormFieldDriver;
 use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
-use RuntimeException;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Support\Proxy\Field;
+use tiFy\Support\Proxy\Form;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Request;
 use tiFy\Support\Proxy\Storage;
@@ -56,7 +59,7 @@ class Recaptcha implements RecaptchaContract
 
     /**
      * Liste des widgets déclarés.
-     * @var array
+     * @type array
      */
     protected $widgets = [];
 
@@ -107,36 +110,39 @@ class Recaptcha implements RecaptchaContract
     public function boot(): RecaptchaContract
     {
         if (!$this->booted) {
+            if (!$this->config('sitekey')) {
+                throw new Exception('Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/');
+            }
 
-            //try {
-            //    //parent::__construct($attrs['secretkey'], (ini_get('allow_url_fopen') ? null : new ReCaptchaSocket()));
-//
-            //    $this->attributes = $attrs;
-//
-            //    Field::register('recaptcha', new RecaptchaField($this));
-//
-            //    add_action('wp_print_footer_scripts', function () {
-            //             if ($this->widgets) {
-            //                $js = "let reCaptchaEl = {};";
-            //                $js .= "function reCaptchaCallback() {";
-            //                foreach ($this->widgets as $id => $params) {
-            //                    $js .= "reCaptchaEl['{$id}']=document.getElementById('{$id}');";
-            //                    $js .= "if(typeof(reCaptchaEl['{$id}'])!='undefined' && reCaptchaEl['{$id}']!=null){";
-            //                    $js .= "try{grecaptcha.render('{$id}', " . json_encode($params) . ");} catch(error){/**console.log(error); */}";
-            //                    $js .= "}";
-            //                }
-            //                $js .= "};";
-            //                echo '<script type="text/javascript">' . $js . '</script>';
-            //                echo '<script type="text/javascript"
-            //                      src="https://www.google.com/recaptcha/api.js?hl=' . $this->getLanguage() . '&onload=reCaptchaCallback&render=explicit"
-            //                      async defer></script>';
-            //            }
-            //        }
-            //    });
-//
-            //} catch (RuntimeException $e) {
-            //    throw $e;
-            //}
+            if (!$this->config('secretkey')) {
+                throw new Exception('Recaptcha v2 Secret Key required, please create and configure : https://www.google.com/recaptcha/about/');
+            }
+
+            Field::register('recaptcha', $this->resolvable(RecaptchaFieldContract::class)
+                ? $this->resolve(RecaptchaFieldContract::class) : new RecaptchaField($this)
+            );
+
+            Form::setFieldDriver('recaptcha', $this->resolvable(RecaptchaFormFieldDriverContract::class)
+                ? $this->resolve(RecaptchaFormFieldDriverContract::class) : new RecaptchaFormFieldDriver($this)
+            );
+
+            add_action('wp_print_footer_scripts', function () {
+                if ($this->widgets) {
+                    $js = "let reCaptchaEl = {};";
+                    $js .= "function reCaptchaCallback() {";
+                    foreach ($this->widgets as $id => $params) {
+                        $js .= "reCaptchaEl['{$id}']=document.getElementById('{$id}');";
+                        $js .= "if(typeof(reCaptchaEl['{$id}'])!='undefined' && reCaptchaEl['{$id}']!=null){";
+                        $js .= "try{grecaptcha.render('{$id}', " . json_encode($params) . ");} catch(error){console.log(error);}";
+                        $js .= "}";
+                    }
+                    $js .= "};";
+                    echo '<script type="text/javascript">' . $js . '</script>';
+                    echo '<script type="text/javascript"
+                         src="https://www.google.com/recaptcha/api.js?hl=' . $this->getLanguage() . '&onload=reCaptchaCallback&render=explicit"
+                         async defer></script>';
+                }
+            });
 
             $this->booted = true;
         }
@@ -149,16 +155,16 @@ class Recaptcha implements RecaptchaContract
      */
     public function config($key = null, $default = null)
     {
-        if (!isset($this->config) || is_null($this->config)) {
-            $this->config = new ParamsBag();
+        if ($this->configBag === null) {
+            $this->configBag = new ParamsBag();
         }
 
         if (is_string($key)) {
-            return $this->config->get($key, $default);
+            return $this->configBag->get($key, $default);
         } elseif (is_array($key)) {
-            return $this->config->set($key);
+            return $this->configBag->set($key);
         } else {
-            return $this->config;
+            return $this->configBag;
         }
     }
 
@@ -170,7 +176,6 @@ class Recaptcha implements RecaptchaContract
         return $this->container;
     }
 
-
     /**
      * @inheritDoc
      */
@@ -180,7 +185,7 @@ class Recaptcha implements RecaptchaContract
 
         switch ($locale) {
             default :
-                [$lang, $indice] = preg_split('/_/', $locale, 2);
+                [$lang] = preg_split('/_/', $locale, 1);
                 break;
             case 'zh_CN':
                 $lang = 'zh-CN';
@@ -216,7 +221,6 @@ class Recaptcha implements RecaptchaContract
                 $lang = 'es-419';
                 break;
         }
-
         return $lang;
     }
 
@@ -225,7 +229,7 @@ class Recaptcha implements RecaptchaContract
      */
     public function getSiteKey(): ?string
     {
-        return $this->attributes['sitekey'] ?? null;
+        return $this->config('sitekey') ?? null;
     }
 
     /**
@@ -244,9 +248,10 @@ class Recaptcha implements RecaptchaContract
     public function reCaptchaDriver(): ReCaptchaDriver
     {
         if ($this->reCaptchaDriver === null) {
-            $this->reCaptchaDriver = new ReCaptchaDriver();
+            $this->reCaptchaDriver = new ReCaptchaDriver(
+                $this->config('secretkey'), (ini_get('allow_url_fopen') ? null : new ReCaptchaSocket())
+            );
         }
-
         return $this->reCaptchaDriver;
     }
 
@@ -271,10 +276,9 @@ class Recaptcha implements RecaptchaContract
      */
     public function resources(?string $path = null)
     {
-        if (!isset($this->resources) ||is_null($this->resources)) {
-            $this->resources = Storage::local(__DIR__ . '/Resources');
+        if (!isset($this->resources) || is_null($this->resources)) {
+            $this->resources = Storage::local(dirname(__DIR__) . '/resources');
         }
-
         return is_null($path) ? $this->resources : $this->resources->path($path);
     }
 
