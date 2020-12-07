@@ -2,7 +2,7 @@
 
 namespace Pollen\Recaptcha;
 
-use Exception;
+use LogicException, RuntimeException;
 use Pollen\Recaptcha\Contracts\Recaptcha as RecaptchaContract;
 use Pollen\Recaptcha\Contracts\RecaptchaField as RecaptchaFieldContract;
 use Pollen\Recaptcha\Contracts\RecaptchaFormFieldDriver as RecaptchaFormFieldDriverContract;
@@ -13,6 +13,8 @@ use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
+use tiFy\Support\Concerns\BootableTrait;
+use tiFy\Support\Concerns\ContainerAwareTrait;
 use tiFy\Support\Proxy\Field;
 use tiFy\Support\Proxy\Form;
 use tiFy\Support\ParamsBag;
@@ -21,17 +23,13 @@ use tiFy\Support\Proxy\Storage;
 
 class Recaptcha implements RecaptchaContract
 {
+    use BootableTrait, ContainerAwareTrait;
+
     /**
      * Instance de la classe.
      * @var static|null
      */
     private static $instance;
-
-    /**
-     * Indicateur d'initialisation.
-     * @var bool
-     */
-    private $booted = false;
 
     /**
      * Instance du pilote associé.
@@ -50,12 +48,6 @@ class Recaptcha implements RecaptchaContract
      * @var ParamsBag
      */
     private $configBag;
-
-    /**
-     * Instance du conteneur d'injection de dépendances.
-     * @var Container|null
-     */
-    private $container;
 
     /**
      * Liste des widgets déclarés.
@@ -91,7 +83,7 @@ class Recaptcha implements RecaptchaContract
             return self::$instance;
         }
 
-        throw new Exception(sprintf('Unavailable %s instance', __CLASS__));
+        throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
     }
 
     /**
@@ -111,19 +103,19 @@ class Recaptcha implements RecaptchaContract
     {
         if (!$this->booted) {
             if (!$this->config('sitekey')) {
-                throw new Exception('Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/');
+                throw new LogicException('Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/');
             }
 
             if (!$this->config('secretkey')) {
-                throw new Exception('Recaptcha v2 Secret Key required, please create and configure : https://www.google.com/recaptcha/about/');
+                throw new LogicException('Recaptcha v2 Secret Key required, please create and configure : https://www.google.com/recaptcha/about/');
             }
 
-            Field::register('recaptcha', $this->resolvable(RecaptchaFieldContract::class)
-                ? $this->resolve(RecaptchaFieldContract::class) : new RecaptchaField($this)
+            Field::register('recaptcha', $this->containerHas(RecaptchaFieldContract::class)
+                ? $this->containerGet(RecaptchaFieldContract::class) : new RecaptchaField($this)
             );
 
-            Form::setFieldDriver('recaptcha', $this->resolvable(RecaptchaFormFieldDriverContract::class)
-                ? $this->resolve(RecaptchaFormFieldDriverContract::class) : new RecaptchaFormFieldDriver($this)
+            Form::setFieldDriver('recaptcha', $this->containerHas(RecaptchaFormFieldDriverContract::class)
+                ? $this->containerGet(RecaptchaFormFieldDriverContract::class) : new RecaptchaFormFieldDriver($this)
             );
 
             add_action('wp_print_footer_scripts', function () {
@@ -166,14 +158,6 @@ class Recaptcha implements RecaptchaContract
         } else {
             return $this->configBag;
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getContainer(): ?Container
-    {
-        return $this->container;
     }
 
     /**
@@ -258,22 +242,6 @@ class Recaptcha implements RecaptchaContract
     /**
      * @inheritDoc
      */
-    public function resolve(string $alias): ?object
-    {
-        return ($container = $this->getContainer()) ? $container->get($alias) : null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resolvable(string $alias): bool
-    {
-        return ($container = $this->getContainer()) && $container->has($alias);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) || is_null($this->resources)) {
@@ -288,16 +256,6 @@ class Recaptcha implements RecaptchaContract
     public function setConfig(array $attrs): RecaptchaContract
     {
         $this->config($attrs);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setContainer(Container $container): RecaptchaContract
-    {
-        $this->container = $container;
 
         return $this;
     }

@@ -2,21 +2,21 @@
 
 namespace Pollen\Recaptcha\Contracts;
 
-use Exception;
-use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Contracts\Support\ParamsBag;
 
+/**
+ * @mixin \tiFy\Support\Concerns\BootableTrait
+ * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ */
 interface Recaptcha
 {
     /**
      * Récupération de l'instance courante.
      *
      * @return static
-     *
-     * @throws Exception
      */
     public static function instance(): Recaptcha;
 
@@ -34,8 +34,6 @@ interface Recaptcha
      * Initialisation.
      *
      * @return static
-     *
-     * @throws Exception
      */
     public function boot(): Recaptcha;
 
@@ -48,13 +46,6 @@ interface Recaptcha
      * @return mixed|ParamsBag
      */
     public function config($key = null, $default = null);
-
-    /**
-     * Récupération de l'instance du gestionnaire d'injection de dépendances.
-     *
-     * @return Container|null
-     */
-    public function getContainer(): ?Container;
 
     /**
      * Récupération de la langue.
@@ -85,24 +76,6 @@ interface Recaptcha
     public function reCaptchaDriver(): ReCaptchaDriver;
 
     /**
-     * Résolution de service fourni par le gestionnaire.
-     *
-     * @param string $alias
-     *
-     * @return object|mixed|null
-     */
-    public function resolve(string $alias);
-
-    /**
-     * Vérification de résolution possible d'un service fourni par le gestionnaire.
-     *
-     * @param string $alias
-     *
-     * @return bool
-     */
-    public function resolvable(string $alias): bool;
-
-    /**
      * Chemin absolu vers une ressources (fichier|répertoire).
      *
      * @param string|null $path Chemin relatif vers la ressource.
@@ -119,15 +92,6 @@ interface Recaptcha
      * @return static
      */
     public function setConfig(array $attrs): ReCaptcha;
-
-    /**
-     * Définition du conteneur d'injection de dépendances.
-     *
-     * @param Container $container
-     *
-     * @return static
-     */
-    public function setContainer(Container $container): ReCaptcha;
 
     /**
      * Récupération de la réponse à l'issue de la soumission.
