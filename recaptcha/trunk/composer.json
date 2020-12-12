@@ -1,0 +1,50 @@
+{
+  "name": "pollen-solutions/recaptcha",
+  "description": "Recaptcha component",
+  "homepage": "https://pollen-solutions/components/recaptcha/",
+  "keywords": [
+    "pollen-solutions",
+    "component",
+    "recaptcha"
+  ],
+  "time": "2020-12-12",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jordy Manner",
+      "email": "jordy.manner@milkcreation.fr",
+      "role": "Developper"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://composer.tigreblanc.fr/pollen-solutions/"
+    }
+  ],
+  "require": {
+    "composer/installers": "~1.0",
+    "google/recaptcha": "^1.2",
+    "presstify/framework": ">=1.4"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pollen\\Recaptcha\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Pollen\\Recaptcha\\Test\\": "tests"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  }
+}
