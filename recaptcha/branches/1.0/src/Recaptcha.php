@@ -101,7 +101,7 @@ class Recaptcha implements RecaptchaContract
      */
     public function boot(): RecaptchaContract
     {
-        if (!$this->booted) {
+        if (!$this->isBooted()) {
             if (!$this->config('sitekey')) {
                 throw new LogicException('Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/');
             }
@@ -136,7 +136,7 @@ class Recaptcha implements RecaptchaContract
                 }
             });
 
-            $this->booted = true;
+            $this->setBooted();
         }
 
         return $this;
@@ -245,7 +245,7 @@ class Recaptcha implements RecaptchaContract
     public function resources(?string $path = null)
     {
         if (!isset($this->resources) || is_null($this->resources)) {
-            $this->resources = Storage::local(dirname(__DIR__) . '/resources');
+            $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
         }
         return is_null($path) ? $this->resources : $this->resources->path($path);
     }

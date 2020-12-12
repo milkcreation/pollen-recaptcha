@@ -32,7 +32,7 @@ return [
 
 ```php
 // config/recaptcha.php
-// @see /vendor/pollen-solutions/recaptcha/config/recaptcha.php
+// @see /vendor/pollen-solutions/recaptcha/resources/config/recaptcha.php
 return [
       //...
 
