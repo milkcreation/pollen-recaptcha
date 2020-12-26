@@ -1,31 +1,30 @@
 {
   "name": "pollen-solutions/recaptcha",
   "description": "Recaptcha component",
-  "homepage": "https://pollen-solutions/components/recaptcha/",
+  "homepage": "https://www.presstify.com/pollen-solutions/recaptcha/",
   "keywords": [
     "pollen-solutions",
     "component",
     "recaptcha"
   ],
-  "time": "2020-12-12",
+  "time": "2020-12-26",
   "license": "MIT",
   "authors": [
     {
       "name": "Jordy Manner",
-      "email": "jordy.manner@milkcreation.fr",
+      "email": "jordy@presstify.com",
       "role": "Developper"
     }
   ],
   "repositories": [
     {
       "type": "composer",
-      "url": "https://composer.tigreblanc.fr/pollen-solutions/"
+      "url": "https://composer.presstify.com/pollen-solutions/"
     }
   ],
   "require": {
     "composer/installers": "~1.0",
-    "google/recaptcha": "^1.2",
-    "presstify/framework": ">=1.4"
+    "google/recaptcha": "^1.2"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"
