@@ -23,7 +23,8 @@ use tiFy\Support\Proxy\Storage;
 
 class Recaptcha implements RecaptchaContract
 {
-    use BootableTrait, ContainerAwareTrait;
+    use BootableTrait;
+    use ContainerAwareTrait;
 
     /**
      * Instance de la classe.
@@ -102,6 +103,8 @@ class Recaptcha implements RecaptchaContract
     public function boot(): RecaptchaContract
     {
         if (!$this->isBooted()) {
+            events()->trigger('recaptcha.booting', [$this]);
+
             if (!$this->config('sitekey')) {
                 throw new LogicException('Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/');
             }
@@ -137,6 +140,8 @@ class Recaptcha implements RecaptchaContract
             });
 
             $this->setBooted();
+
+            events()->trigger('recaptcha.booted', [$this]);
         }
 
         return $this;
