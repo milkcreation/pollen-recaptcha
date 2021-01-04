@@ -8,10 +8,11 @@ use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Contracts\Support\ParamsBag;
-use tiFy\Field\Contracts\FieldContract;
+
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ * @mixin \tiFy\Support\Concerns\FieldManagerAwareTrait
  */
 interface RecaptchaContract
 {
@@ -48,13 +49,6 @@ interface RecaptchaContract
      * @return ParamsBag|int|string|array|object
      */
     public function config($key = null, $default = null);
-
-    /**
-     * Instance du gestionnaire de champs.
-     *
-     * @return FieldContract
-     */
-    public function fieldManager(): FieldContract;
 
     /**
      * Récupération de la langue.
@@ -101,15 +95,6 @@ interface RecaptchaContract
      * @return static
      */
     public function setConfig(array $attrs): RecaptchaContract;
-
-    /**
-     * Définition du gestionnaire de champs.
-     *
-     * @param FieldContract $fieldManager
-     *
-     * @return static
-     */
-    public function setFieldManager(FieldContract $fieldManager): RecaptchaContract;
 
     /**
      * Récupération de la réponse à l'issue de la soumission.

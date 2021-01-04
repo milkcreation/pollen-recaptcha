@@ -13,11 +13,10 @@ use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
-use tiFy\Field\Contracts\FieldContract;
-use tiFy\Field\Field;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
+use tiFy\Support\Concerns\FieldManagerAwareTrait;
 use tiFy\Support\Proxy\Form;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Request;
@@ -27,6 +26,7 @@ class Recaptcha implements RecaptchaContract
 {
     use BootableTrait;
     use ContainerAwareTrait;
+    use FieldManagerAwareTrait;
 
     /**
      * Instance de la classe.
@@ -53,12 +53,6 @@ class Recaptcha implements RecaptchaContract
     private $configBag;
 
     /**
-     * Instance du gestion de portions d'affichage.
-     * @var FieldContract
-     */
-    protected $fieldManager;
-
-    /**
      * Liste des widgets déclarés.
      * @type array
      */
@@ -77,7 +71,6 @@ class Recaptcha implements RecaptchaContract
         if (!is_null($container)) {
             $this->setContainer($container);
         }
-
         if (!self::$instance instanceof static) {
             self::$instance = $this;
         }
@@ -91,7 +84,6 @@ class Recaptcha implements RecaptchaContract
         if (self::$instance instanceof self) {
             return self::$instance;
         }
-
         throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
     }
 
@@ -125,13 +117,10 @@ class Recaptcha implements RecaptchaContract
                 );
             }
 
-            $fieldManager = $this->containerHas(FieldContract::class)
-                ? $this->containerGet(FieldContract::class) : new Field();
-
-            $fieldManager->register(
+            $this->fieldManager()->register(
                 'recaptcha',
                 $this->containerHas(RecaptchaField::class)
-                    ? RecaptchaField::class : new RecaptchaField($this, $fieldManager)
+                    ? RecaptchaField::class : new RecaptchaField($this, $this->fieldManager())
             );
 
             Form::setFieldDriver(
@@ -162,7 +151,6 @@ class Recaptcha implements RecaptchaContract
                     }
                 }
             );
-
             $this->setBooted();
 
             events()->trigger('recaptcha.booted', [$this]);
@@ -179,7 +167,6 @@ class Recaptcha implements RecaptchaContract
         if ($this->configBag === null) {
             $this->configBag = new ParamsBag();
         }
-
         if (is_string($key)) {
             return $this->configBag->get($key, $default);
         } elseif (is_array($key)) {
@@ -187,19 +174,6 @@ class Recaptcha implements RecaptchaContract
         } else {
             return $this->configBag;
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function fieldManager(): FieldContract
-    {
-        if ($this->fieldManager === null) {
-            $this->fieldManager = $this->containerHas(FieldContract::class)
-                ? $this->containerGet(FieldContract::class) : new Field();
-        }
-
-        return $this->fieldManager;
     }
 
     /**
@@ -298,16 +272,6 @@ class Recaptcha implements RecaptchaContract
     public function setConfig(array $attrs): RecaptchaContract
     {
         $this->config($attrs);
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setFieldManager(FieldContract $fieldManager): RecaptchaContract
-    {
-        $this->fieldManager = $fieldManager;
 
         return $this;
     }
