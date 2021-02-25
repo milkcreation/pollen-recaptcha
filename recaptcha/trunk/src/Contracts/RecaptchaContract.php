@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Contracts;
 
@@ -10,15 +12,16 @@ use tiFy\Contracts\Support\ParamsBag;
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
+ * @mixin \tiFy\Support\Concerns\FieldManagerAwareTrait
  */
-interface Recaptcha
+interface RecaptchaContract
 {
     /**
      * Récupération de l'instance courante.
      *
      * @return static
      */
-    public static function instance(): Recaptcha;
+    public static function instance(): RecaptchaContract;
 
     /**
      * Déclaration d'un widget de rendu.
@@ -28,14 +31,14 @@ interface Recaptcha
      *
      * @return static
      */
-    public function addWidgetRender(string $id, array $params = []): Recaptcha;
+    public function addWidgetRender(string $id, array $params = []): RecaptchaContract;
 
     /**
      * Initialisation.
      *
      * @return static
      */
-    public function boot(): Recaptcha;
+    public function boot(): RecaptchaContract;
 
     /**
      * Récupération de paramètre|Définition de paramètres|Instance du gestionnaire de paramètre.
@@ -43,7 +46,7 @@ interface Recaptcha
      * @param string|array|null $key Clé d'indice du paramètre à récupérer|Liste des paramètre à définir.
      * @param mixed $default Valeur de retour par défaut lorsque la clé d'indice est une chaine de caractère.
      *
-     * @return mixed|ParamsBag
+     * @return ParamsBag|int|string|array|object
      */
     public function config($key = null, $default = null);
 
@@ -91,7 +94,7 @@ interface Recaptcha
      *
      * @return static
      */
-    public function setConfig(array $attrs): ReCaptcha;
+    public function setConfig(array $attrs): RecaptchaContract;
 
     /**
      * Récupération de la réponse à l'issue de la soumission.

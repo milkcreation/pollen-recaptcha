@@ -1,26 +1,31 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Field;
 
 use Exception;
-use Pollen\Recaptcha\Contracts\RecaptchaField as RecaptchaFieldContract;
-use Pollen\Recaptcha\Contracts\Recaptcha as RecaptchaManager;
+use Pollen\Recaptcha\Contracts\RecaptchaContract;
+use tiFy\Field\Contracts\FieldContract;
 use tiFy\Field\FieldDriver;
 
-class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
+class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
 {
     /**
      * Instance du gestionnaire.
-     * @var RecaptchaManager|null
+     * @var RecaptchaContract|null
      */
     protected $recaptchaManager;
 
     /**
-     * @param RecaptchaManager $recaptchaManager
+     * @param RecaptchaContract $recaptchaManager
+     * @param FieldContract $fieldManager
      */
-    public function __construct(RecaptchaManager $recaptchaManager)
+    public function __construct(RecaptchaContract $recaptchaManager, FieldContract $fieldManager)
     {
         $this->recaptchaManager = $recaptchaManager;
+
+        parent::__construct($fieldManager);
     }
 
     /**
@@ -75,7 +80,7 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
     /**
      * @inheritDoc
      */
-    public function recaptchaManager(): RecaptchaManager
+    public function recaptchaManager(): RecaptchaContract
     {
         return $this->recaptchaManager;
     }
@@ -97,10 +102,13 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldContract
             $siteKey = $this->recaptchaManager()->getSiteKey();
         }
 
-        $this->recaptchaManager()->addWidgetRender($this->get('attrs.id'), [
-            'sitekey' => $siteKey,
-            'theme'   => $this->pull('theme'),
-        ]);
+        $this->recaptchaManager()->addWidgetRender(
+            $this->get('attrs.id'),
+            [
+                'sitekey' => $siteKey,
+                'theme'   => $this->pull('theme'),
+            ]
+        );
 
         return parent::render();
     }

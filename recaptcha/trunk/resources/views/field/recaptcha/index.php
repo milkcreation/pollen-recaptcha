@@ -1,6 +1,6 @@
 <?php
 /**
- * @var tiFy\Field\FieldView $this
+ * @var tiFy\Field\FieldViewInterface $this
  */
 ?>
 <?php $this->before(); ?>
