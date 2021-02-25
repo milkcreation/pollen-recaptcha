@@ -4,32 +4,37 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
-use LogicException;
-use RuntimeException;
-use Pollen\Recaptcha\Contracts\RecaptchaContract;
+use Exception;
+use Pollen\Recaptcha\Exception\RecaptchaSecretKeyException;
+use Pollen\Recaptcha\Exception\RecaptchaSiteKeyException;
 use Pollen\Recaptcha\Field\RecaptchaField;
 use Pollen\Recaptcha\Form\RecaptchaFormField;
+use Pollen\Support\Concerns\BootableTrait;
+use Pollen\Support\Concerns\ConfigBagAwareTrait;
+use Pollen\Support\Concerns\ContainerAwareTrait;
+use Pollen\Support\Concerns\EventDispatcherAwareTrait;
+use Pollen\Support\Concerns\FieldManagerAwareTrait;
+use Pollen\Support\Concerns\FormManagerAwareTrait;
+use Pollen\Support\Concerns\HttpRequestAwareTrait;
+use Pollen\Support\Filesystem;
 use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
-use tiFy\Contracts\Filesystem\LocalFilesystem;
-use tiFy\Support\Concerns\BootableTrait;
-use tiFy\Support\Concerns\ContainerAwareTrait;
-use tiFy\Support\Concerns\FieldManagerAwareTrait;
-use tiFy\Support\Proxy\Form;
-use tiFy\Support\ParamsBag;
-use tiFy\Support\Proxy\Request;
-use tiFy\Support\Proxy\Storage;
+use RuntimeException;
 
-class Recaptcha implements RecaptchaContract
+class Recaptcha implements RecaptchaInterface
 {
     use BootableTrait;
+    use ConfigBagAwareTrait;
     use ContainerAwareTrait;
+    use EventDispatcherAwareTrait;
     use FieldManagerAwareTrait;
+    use FormManagerAwareTrait;
+    use HttpRequestAwareTrait;
 
     /**
-     * Instance de la classe.
+     * Instance principale.
      * @var static|null
      */
     private static $instance;
@@ -41,16 +46,10 @@ class Recaptcha implements RecaptchaContract
     private $reCaptchaDriver;
 
     /**
-     * Instance du gestionnaire des ressources
-     * @var LocalFilesystem|null
+     * Chemin vers le répertoire des ressources.
+     * @var string|null
      */
-    private $resources;
-
-    /**
-     * Instance du gestionnaire de configuration.
-     * @var ParamsBag
-     */
-    private $configBag;
+    protected $resourcesBaseDir;
 
     /**
      * Liste des widgets déclarés.
@@ -71,26 +70,33 @@ class Recaptcha implements RecaptchaContract
         if (!is_null($container)) {
             $this->setContainer($container);
         }
+
+        if ($this->config('boot_enabled', true)) {
+            $this->boot();
+        }
+
         if (!self::$instance instanceof static) {
             self::$instance = $this;
         }
     }
 
     /**
-     * @inheritDoc
+     * Récupération de l'instance principale.
+     *
+     * @return static
      */
-    public static function instance(): RecaptchaContract
+    public static function getInstance(): RecaptchaInterface
     {
         if (self::$instance instanceof self) {
             return self::$instance;
         }
-        throw new RuntimeException(sprintf('Unavailable %s instance', __CLASS__));
+        throw new RuntimeException(sprintf('Unavailable [%s] instance', __CLASS__));
     }
 
     /**
      * @inheritDoc
      */
-    public function addWidgetRender(string $id, array $params = []): RecaptchaContract
+    public function addWidgetRender(string $id, array $params = []): RecaptchaInterface
     {
         $this->widgets[$id] = $params;
 
@@ -100,22 +106,10 @@ class Recaptcha implements RecaptchaContract
     /**
      * @inheritDoc
      */
-    public function boot(): RecaptchaContract
+    public function boot(): RecaptchaInterface
     {
         if (!$this->isBooted()) {
-            events()->trigger('recaptcha.booting', [$this]);
-
-            if (!$this->config('sitekey')) {
-                throw new LogicException(
-                    'Recaptcha v2 Site Key required, please create and configure : https://www.google.com/recaptcha/about/'
-                );
-            }
-
-            if (!$this->config('secretkey')) {
-                throw new LogicException(
-                    'Recaptcha v2 Secret Key required, please create and configure : https://www.google.com/recaptcha/about/'
-                );
-            }
+            $this->eventDispatcher()->trigger('recaptcha.booting', [&$this]);
 
             $this->fieldManager()->register(
                 'recaptcha',
@@ -123,37 +117,15 @@ class Recaptcha implements RecaptchaContract
                     ? RecaptchaField::class : new RecaptchaField($this, $this->fieldManager())
             );
 
-            Form::setFieldDriver(
+            $this->formManager()->registerFieldDriver(
                 'recaptcha',
                 $this->containerHas(RecaptchaFormField::class)
-                    ? $this->containerGet(RecaptchaFormField::class) : new RecaptchaFormField($this)
+                    ? RecaptchaFormField::class : new RecaptchaFormField($this)
             );
 
-            add_action(
-                'wp_print_footer_scripts',
-                function () {
-                    if ($this->widgets) {
-                        $js = "let reCaptchaEl = {};";
-                        $js .= "function reCaptchaCallback() {";
-                        foreach ($this->widgets as $id => $params) {
-                            $js .= "reCaptchaEl['{$id}']=document.getElementById('{$id}');";
-                            $js .= "if(typeof(reCaptchaEl['{$id}'])!='undefined' && reCaptchaEl['{$id}']!=null){";
-                            $js .= "try{grecaptcha.render('{$id}', " . json_encode(
-                                    $params
-                                ) . ");} catch(error){console.log(error);}";
-                            $js .= "}";
-                        }
-                        $js .= "};";
-                        echo '<script type="text/javascript">' . $js . '</script>';
-                        echo '<script type="text/javascript"
-                         src="https://www.google.com/recaptcha/api.js?hl=' . $this->getLanguage() . '&onload=reCaptchaCallback&render=explicit"
-                         async defer></script>';
-                    }
-                }
-            );
             $this->setBooted();
 
-            events()->trigger('recaptcha.booted', [$this]);
+            $this->eventDispatcher()->trigger('recaptcha.booted', [&$this]);
         }
 
         return $this;
@@ -162,18 +134,80 @@ class Recaptcha implements RecaptchaContract
     /**
      * @inheritDoc
      */
-    public function config($key = null, $default = null)
+    public function checkConfig(): bool
     {
-        if ($this->configBag === null) {
-            $this->configBag = new ParamsBag();
+        if (!$this->config('sitekey')) {
+            throw new RecaptchaSiteKeyException();
         }
-        if (is_string($key)) {
-            return $this->configBag->get($key, $default);
-        } elseif (is_array($key)) {
-            return $this->configBag->set($key);
-        } else {
-            return $this->configBag;
+
+        if (!$this->config('secretkey')) {
+            throw new RecaptchaSecretKeyException();
         }
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function defaultConfig(): array
+    {
+        return [
+            /**
+             * @var string $sitekey Recaptcha v2 Site key (required)
+             */
+            'sitekey'   => null,
+            /**
+             * @var string $secretkey Recaptcha v2 Secret key (required)
+             */
+            'secretkey' => null,
+            /**
+             * @var string $locale format ISO 15897.
+             */
+            'locale'    => null,
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHandleResponse(): ReCaptchaResponse
+    {
+        $request = $this->httpRequest();
+
+        return $this->reCaptchaDriver()->verify($request->get('g-recaptcha-response'), $request->getClientIp());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getJsScripts(): string
+    {
+        if ($this->widgets) {
+            $lang = $this->getLanguage();
+
+            $js = "let reCaptchaEl = {};";
+            $js .= "function reCaptchaCallback() {";
+            foreach ($this->widgets as $id => $params) {
+                try {
+                    $params = json_encode($params, JSON_THROW_ON_ERROR);
+                } catch (Exception $e) {
+                    $params = '{}';
+                }
+
+                $js .= "reCaptchaEl['{$id}']=document.getElementById('{$id}');";
+                $js .= "if(typeof(reCaptchaEl['{$id}'])!='undefined' && reCaptchaEl['{$id}']!=null){";
+                $js .= "try{grecaptcha.render('{$id}', {$params});} catch(error){console.log(error);}";
+                $js .= "}";
+            }
+            $js .= "};";
+            $output = "<script type=\"text/javascript\">{$js}</script>";
+            $output .= "<script type=\"text/javascript\" src=\"https://www.google.com/recaptcha/api.js?hl={$lang}&onload=reCaptchaCallback&render=explicit\" async defer></script>";
+
+            return $output;
+        }
+
+        return '';
     }
 
     /**
@@ -181,11 +215,9 @@ class Recaptcha implements RecaptchaContract
      */
     public function getLanguage(): string
     {
-        global $locale;
-
-        switch ($locale) {
+        switch ($locale = (string)$this->config('locale', 'en_US')) {
             default :
-                [$lang] = preg_split('/_/', $locale, 1);
+                [$lang] = explode("_", $locale, 1);
                 break;
             case 'zh_CN':
                 $lang = 'zh-CN';
@@ -229,7 +261,7 @@ class Recaptcha implements RecaptchaContract
      */
     public function getSiteKey(): ?string
     {
-        return $this->config('sitekey') ?? null;
+        return $this->config('sitekey');
     }
 
     /**
@@ -237,7 +269,7 @@ class Recaptcha implements RecaptchaContract
      */
     public function isValidated(): bool
     {
-        return $this->response()->isSuccess();
+        return $this->getHandleResponse()->isSuccess();
     }
 
     /**
@@ -258,29 +290,30 @@ class Recaptcha implements RecaptchaContract
     /**
      * @inheritDoc
      */
-    public function resources(?string $path = null)
+    public function resources(?string $path = null): string
     {
-        if (!isset($this->resources) || is_null($this->resources)) {
-            $this->resources = Storage::local(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'resources');
+        if ($this->resourcesBaseDir === null) {
+            $this->resourcesBaseDir = Filesystem::normalizePath(
+                realpath(
+                    dirname(__DIR__) . '/resources/'
+                )
+            );
+
+            if (!file_exists($this->resourcesBaseDir)) {
+                throw new RuntimeException('Recaptcha ressources directory unreachable');
+            }
         }
-        return is_null($path) ? $this->resources : $this->resources->path($path);
+
+        return is_null($path) ? $this->resourcesBaseDir : $this->resourcesBaseDir . Filesystem::normalizePath($path);
     }
 
     /**
      * @inheritDoc
      */
-    public function setConfig(array $attrs): RecaptchaContract
+    public function setResourcesBaseDir(string $resourceBaseDir): RecaptchaInterface
     {
-        $this->config($attrs);
+        $this->resourcesBaseDir = Filesystem::normalizePath($resourceBaseDir);
 
         return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function response(): ReCaptchaResponse
-    {
-        return $this->reCaptchaDriver()->verify(Request::input('g-recaptcha-response'), Request::server('REMOTE_ADDR'));
     }
 }

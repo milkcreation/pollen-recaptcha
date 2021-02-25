@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Form;
 
-use Pollen\Recaptcha\Contracts\RecaptchaContract;
-use tiFy\Form\FieldDriver;
-use tiFy\Form\FieldValidateException;
+use Pollen\Form\FieldDriver;
+use Pollen\Form\Exception\FieldValidateException;
+use Pollen\Form\FieldDriverInterface;
+use Pollen\Recaptcha\Exception\RecaptchaConfigException;
+use Pollen\Recaptcha\RecaptchaInterface;
 
 class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterface
 {
     /**
      * Instance du gestionnaire.
-     * @var RecaptchaContract
+     * @var RecaptchaInterface
      */
     private $recaptchaManager;
 
@@ -23,9 +25,9 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
     protected $supports = ['label', 'request', 'wrapper'];
 
     /**
-     * @param RecaptchaContract $recaptchaManager
+     * @param RecaptchaInterface $recaptchaManager
      */
-    public function __construct(RecaptchaContract $recaptchaManager)
+    public function __construct(RecaptchaInterface $recaptchaManager)
     {
         $this->recaptchaManager = $recaptchaManager;
     }
@@ -33,9 +35,27 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
     /**
      * @inheritDoc
      */
+    public function boot(): FieldDriverInterface
+    {
+        if (!$this->isBooted()) {
+            try{
+                $this->recaptchaManager->checkConfig();
+            } catch(RecaptchaConfigException $e) {
+                throw $e;
+            }
+
+            parent::boot();
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function render(): string
     {
-        return $this->recaptchaManager->fieldManager()->get(
+        return (string)$this->recaptchaManager->fieldManager()->get(
             'recaptcha',
             array_merge(
                 $this->getExtras(),
@@ -43,13 +63,13 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
                     'name'  => $this->getName(),
                     'attrs' => array_merge(
                         [
-                            'id' => preg_replace('/-/', '_', sanitize_key($this->form()->getAlias())),
+                            'id' => str_replace("-", '_', sanitize_key($this->form()->getAlias())),
                         ],
                         $this->params('attrs', [])
                     ),
                 ]
             )
-        )->render();
+        );
     }
 
     /**

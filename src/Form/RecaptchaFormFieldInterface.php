@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Form;
 
-use tiFy\Contracts\Form\FieldDriver as FieldDriver;
+use Pollen\Form\FieldDriverInterface;
 
-interface RecaptchaFormFieldInterface extends FieldDriver
+interface RecaptchaFormFieldInterface extends FieldDriverInterface
 {
 }
