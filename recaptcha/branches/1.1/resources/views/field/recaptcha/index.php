@@ -1,10 +1,10 @@
 <?php
 /**
- * @var tiFy\Field\FieldViewInterface $this
+ * @var Pollen\Field\FieldViewTemplateInterface $this
  */
 ?>
 <?php $this->before(); ?>
-<?php echo partial('tag', [
+<?php echo $this->partial('tag', [
     'tag'   => 'div',
     'attrs' => $this->get('attrs', [])
 ]);

@@ -5,27 +5,44 @@ declare(strict_types=1);
 namespace Pollen\Recaptcha\Field;
 
 use Exception;
-use Pollen\Recaptcha\Contracts\RecaptchaContract;
-use tiFy\Field\Contracts\FieldContract;
-use tiFy\Field\FieldDriver;
+use Pollen\Field\FieldDriver;
+use Pollen\Field\FieldManagerInterface;
+use Pollen\Recaptcha\Exception\RecaptchaConfigException;
+use Pollen\Recaptcha\RecaptchaInterface;
 
 class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
 {
     /**
      * Instance du gestionnaire.
-     * @var RecaptchaContract|null
+     * @var RecaptchaInterface
      */
     protected $recaptchaManager;
 
     /**
-     * @param RecaptchaContract $recaptchaManager
-     * @param FieldContract $fieldManager
+     * @param RecaptchaInterface $recaptchaManager
+     * @param FieldManagerInterface $fieldManager
      */
-    public function __construct(RecaptchaContract $recaptchaManager, FieldContract $fieldManager)
+    public function __construct(RecaptchaInterface $recaptchaManager, FieldManagerInterface $fieldManager)
     {
         $this->recaptchaManager = $recaptchaManager;
 
         parent::__construct($fieldManager);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function boot(): void
+    {
+        if (!$this->isBooted()) {
+            try{
+                $this->recaptchaManager->checkConfig();
+            } catch(RecaptchaConfigException $e) {
+                throw $e;
+            }
+
+            parent::boot();
+        }
     }
 
     /**
@@ -80,7 +97,7 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
     /**
      * @inheritDoc
      */
-    public function recaptchaManager(): RecaptchaContract
+    public function recaptchaManager(): RecaptchaInterface
     {
         return $this->recaptchaManager;
     }
@@ -118,6 +135,6 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
      */
     public function viewDirectory(): string
     {
-        return $this->recaptchaManager()->resources('views/field/recaptcha');
+        return $this->recaptchaManager()->resources('/views/field/recaptcha');
     }
 }

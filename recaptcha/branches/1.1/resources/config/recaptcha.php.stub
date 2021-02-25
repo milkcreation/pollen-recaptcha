@@ -1,0 +1,16 @@
+<?php
+
+return [
+    /**
+     * @var string $sitekey Recaptcha v2 Site key (required).
+     */
+    'sitekey'   => '=====sitekey=====',
+    /**
+     * @var string $secretkey Recaptcha v2 Secret key (required).
+     */
+    'secretkey' => '=====secretkey=====',
+    /**
+     * @var string|null $locale format ISO 15897.
+     */
+    'locale'    => null,
+];

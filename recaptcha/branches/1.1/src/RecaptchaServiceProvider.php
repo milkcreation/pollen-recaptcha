@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
-use Pollen\Recaptcha\Contracts\RecaptchaContract;
+use Pollen\Field\FieldManagerInterface;
 use Pollen\Recaptcha\Field\RecaptchaField;
 use Pollen\Recaptcha\Form\RecaptchaFormField;
-use tiFy\Container\ServiceProvider as BaseServiceProvider;
-use tiFy\Field\Contracts\FieldContract;
+use Pollen\Container\BaseServiceProvider;
 
 class RecaptchaServiceProvider extends BaseServiceProvider
 {
@@ -18,7 +17,7 @@ class RecaptchaServiceProvider extends BaseServiceProvider
      * @var string[]
      */
     protected $provides = [
-        RecaptchaContract::class,
+        RecaptchaInterface::class,
         RecaptchaField::class,
         RecaptchaFormField::class,
     ];
@@ -26,25 +25,12 @@ class RecaptchaServiceProvider extends BaseServiceProvider
     /**
      * @inheritDoc
      */
-    public function boot()
-    {
-        events()->listen(
-            'wp.booted',
-            function () {
-                $this->getContainer()->get(RecaptchaContract::class)->boot();
-            }
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function register(): void
     {
         $this->getContainer()->share(
-            RecaptchaContract::class,
+            RecaptchaInterface::class,
             function () {
-                return new Recaptcha(config('recaptcha', []), $this->getContainer());
+                return new Recaptcha([], $this->getContainer());
             }
         );
 
@@ -52,8 +38,8 @@ class RecaptchaServiceProvider extends BaseServiceProvider
             RecaptchaField::class,
             function () {
                 return new RecaptchaField(
-                    $this->getContainer()->get(RecaptchaContract::class),
-                    $this->getContainer()->get(FieldContract::class)
+                    $this->getContainer()->get(RecaptchaInterface::class),
+                    $this->getContainer()->get(FieldManagerInterface::class)
                 );
             }
         );
@@ -61,7 +47,7 @@ class RecaptchaServiceProvider extends BaseServiceProvider
         $this->getContainer()->add(
             RecaptchaFormField::class,
             function () {
-                return new RecaptchaFormField($this->getContainer()->get(RecaptchaContract::class));
+                return new RecaptchaFormField($this->getContainer()->get(RecaptchaInterface::class));
             }
         );
     }

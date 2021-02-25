@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Field;
 
-use Pollen\Recaptcha\Contracts\RecaptchaContract;
-use tiFy\Field\FieldDriverInterface;
+use Pollen\Field\FieldDriverInterface;
+use Pollen\Recaptcha\RecaptchaInterface;
 
 interface RecaptchaFieldInterface extends FieldDriverInterface
 {
     /**
      * Instance du gestionnaire reCaptcha
      *
-     * @return RecaptchaContract
+     * @return RecaptchaInterface
      */
-    public function recaptchaManager(): RecaptchaContract;
+    public function recaptchaManager(): RecaptchaInterface;
 }
