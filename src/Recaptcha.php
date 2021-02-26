@@ -11,11 +11,11 @@ use Pollen\Recaptcha\Field\RecaptchaField;
 use Pollen\Recaptcha\Form\RecaptchaFormField;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
-use Pollen\Support\Concerns\ContainerAwareTrait;
-use Pollen\Support\Concerns\EventDispatcherAwareTrait;
-use Pollen\Support\Concerns\FieldManagerAwareTrait;
-use Pollen\Support\Concerns\FormManagerAwareTrait;
-use Pollen\Support\Concerns\HttpRequestAwareTrait;
+use Pollen\Support\Proxy\ContainerProxy;
+use Pollen\Support\Proxy\EventDispatcherProxy;
+use Pollen\Support\Proxy\FieldManagerProxy;
+use Pollen\Support\Proxy\FormManagerProxy;
+use Pollen\Support\Proxy\HttpRequestProxy;
 use Pollen\Support\Filesystem;
 use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
@@ -27,11 +27,11 @@ class Recaptcha implements RecaptchaInterface
 {
     use BootableTrait;
     use ConfigBagAwareTrait;
-    use ContainerAwareTrait;
-    use EventDispatcherAwareTrait;
-    use FieldManagerAwareTrait;
-    use FormManagerAwareTrait;
-    use HttpRequestAwareTrait;
+    use ContainerProxy;
+    use EventDispatcherProxy;
+    use FieldManagerProxy;
+    use FormManagerProxy;
+    use HttpRequestProxy;
 
     /**
      * Instance principale.
