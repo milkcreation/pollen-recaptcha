@@ -73,7 +73,7 @@ HTML;
 exit;
 ```
 
-### Wordpress required Usage
+## Wordpress Usage (recommended)
 
 ```php
 use Pollen\Recaptcha\Recaptcha;

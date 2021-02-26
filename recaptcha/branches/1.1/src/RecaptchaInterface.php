@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
+use Pollen\Support\Concerns\BootableTraitInterface;
+use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
+use Pollen\Support\Proxy\ContainerProxyInterface;
+use Pollen\Support\Proxy\EventDispatcherProxyInterface;
+use Pollen\Support\Proxy\FieldManagerProxyInterface;
+use Pollen\Support\Proxy\FormManagerProxyInterface;
+use Pollen\Support\Proxy\HttpRequestProxyInterface;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 
-/**
- * @mixin \Pollen\Support\Concerns\BootableTrait
- * @mixin \Pollen\Support\Concerns\ConfigBagAwareTrait
- * @mixin \Pollen\Support\Concerns\ContainerAwareTrait
- * @mixin \Pollen\Support\Concerns\FieldManagerAwareTrait
- * @mixin \Pollen\Support\Concerns\FormManagerAwareTrait
- * @mixin \Pollen\Support\Concerns\HttpRequestAwareTrait
- */
-interface RecaptchaInterface
+interface RecaptchaInterface extends
+    BootableTraitInterface,
+    ConfigBagAwareTraitInterface,
+    ContainerProxyInterface,
+    EventDispatcherProxyInterface,
+    FieldManagerProxyInterface,
+    FormManagerProxyInterface,
+    HttpRequestProxyInterface
 {
     /**
      * Déclaration d'un widget de rendu.
