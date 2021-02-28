@@ -7,9 +7,9 @@ namespace Pollen\Recaptcha;
 use Pollen\Support\Concerns\BootableTraitInterface;
 use Pollen\Support\Concerns\ConfigBagAwareTraitInterface;
 use Pollen\Support\Proxy\ContainerProxyInterface;
-use Pollen\Support\Proxy\EventDispatcherProxyInterface;
-use Pollen\Support\Proxy\FieldManagerProxyInterface;
-use Pollen\Support\Proxy\FormManagerProxyInterface;
+use Pollen\Support\Proxy\EventProxyInterface;
+use Pollen\Support\Proxy\FieldProxyInterface;
+use Pollen\Support\Proxy\FormProxyInterface;
 use Pollen\Support\Proxy\HttpRequestProxyInterface;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
@@ -18,9 +18,9 @@ interface RecaptchaInterface extends
     BootableTraitInterface,
     ConfigBagAwareTraitInterface,
     ContainerProxyInterface,
-    EventDispatcherProxyInterface,
-    FieldManagerProxyInterface,
-    FormManagerProxyInterface,
+    EventProxyInterface,
+    FieldProxyInterface,
+    FormProxyInterface,
     HttpRequestProxyInterface
 {
     /**

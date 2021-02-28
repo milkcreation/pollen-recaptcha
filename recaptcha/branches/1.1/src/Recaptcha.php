@@ -12,9 +12,9 @@ use Pollen\Recaptcha\Form\RecaptchaFormField;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
 use Pollen\Support\Proxy\ContainerProxy;
-use Pollen\Support\Proxy\EventDispatcherProxy;
-use Pollen\Support\Proxy\FieldManagerProxy;
-use Pollen\Support\Proxy\FormManagerProxy;
+use Pollen\Support\Proxy\EventProxy;
+use Pollen\Support\Proxy\FieldProxy;
+use Pollen\Support\Proxy\FormProxy;
 use Pollen\Support\Proxy\HttpRequestProxy;
 use Pollen\Support\Filesystem;
 use Psr\Container\ContainerInterface as Container;
@@ -28,9 +28,9 @@ class Recaptcha implements RecaptchaInterface
     use BootableTrait;
     use ConfigBagAwareTrait;
     use ContainerProxy;
-    use EventDispatcherProxy;
-    use FieldManagerProxy;
-    use FormManagerProxy;
+    use EventProxy;
+    use FieldProxy;
+    use FormProxy;
     use HttpRequestProxy;
 
     /**
@@ -109,15 +109,15 @@ class Recaptcha implements RecaptchaInterface
     public function boot(): RecaptchaInterface
     {
         if (!$this->isBooted()) {
-            $this->eventDispatcher()->trigger('recaptcha.booting', [&$this]);
+            $this->event()->trigger('recaptcha.booting', [&$this]);
 
-            $this->fieldManager()->register(
+            $this->field()->register(
                 'recaptcha',
                 $this->containerHas(RecaptchaField::class)
-                    ? RecaptchaField::class : new RecaptchaField($this, $this->fieldManager())
+                    ? RecaptchaField::class : new RecaptchaField($this, $this->field())
             );
 
-            $this->formManager()->registerFieldDriver(
+            $this->form()->registerFormFieldDriver(
                 'recaptcha',
                 $this->containerHas(RecaptchaFormField::class)
                     ? RecaptchaFormField::class : new RecaptchaFormField($this)
@@ -125,7 +125,7 @@ class Recaptcha implements RecaptchaInterface
 
             $this->setBooted();
 
-            $this->eventDispatcher()->trigger('recaptcha.booted', [&$this]);
+            $this->event()->trigger('recaptcha.booted', [&$this]);
         }
 
         return $this;

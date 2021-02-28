@@ -1,6 +1,6 @@
 <?php
 /**
- * @var Pollen\Field\FieldViewTemplateInterface $this
+ * @var Pollen\Field\FieldViewLoaderInterface $this
  */
 ?>
 <?php $this->before(); ?>

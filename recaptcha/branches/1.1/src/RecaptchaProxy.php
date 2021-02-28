@@ -7,7 +7,10 @@ namespace Pollen\Recaptcha;
 use Psr\Container\ContainerInterface as Container;
 use RuntimeException;
 
-trait RecaptchaProxyTrait
+/**
+ * @see \Pollen\Recaptcha\RecaptchaProxyInterface
+ */
+trait RecaptchaProxy
 {
     /**
      * Instance du gestionnaire reCaptcha.
@@ -46,7 +49,7 @@ trait RecaptchaProxyTrait
      *
      * @return static
      */
-    public function setRecaptcha(RecaptchaInterface $recaptcha): self
+    public function setRecaptcha(RecaptchaInterface $recaptcha): RecaptchaProxy
     {
         $this->recaptcha = $recaptcha;
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Form;
 
-use Pollen\Form\FieldDriver;
 use Pollen\Form\Exception\FieldValidateException;
-use Pollen\Form\FieldDriverInterface;
+use Pollen\Form\FormFieldDriver;
+use Pollen\Form\FormFieldDriverInterface;
 use Pollen\Recaptcha\Exception\RecaptchaConfigException;
 use Pollen\Recaptcha\RecaptchaInterface;
 
-class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterface
+class RecaptchaFormField extends FormFieldDriver implements RecaptchaFormFieldInterface
 {
     /**
      * Instance du gestionnaire.
@@ -35,7 +35,7 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
     /**
      * @inheritDoc
      */
-    public function boot(): FieldDriverInterface
+    public function boot(): FormFieldDriverInterface
     {
         if (!$this->isBooted()) {
             try{
@@ -55,7 +55,7 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
      */
     public function render(): string
     {
-        return (string)$this->recaptchaManager->fieldManager()->get(
+        return (string)$this->recaptchaManager->field(
             'recaptcha',
             array_merge(
                 $this->getExtras(),
@@ -79,7 +79,7 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
     {
         if (!$this->recaptchaManager->isValidated()) {
             throw (new FieldValidateException(__('La saisie de la protection antispam est incorrecte.', 'tify')))
-                ->setField($this)->setAlias('recaptcha');
+                ->setFormField($this)->setAlias('recaptcha');
         }
     }
 }
