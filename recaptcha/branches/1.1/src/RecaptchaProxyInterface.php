@@ -18,7 +18,7 @@ interface RecaptchaProxyInterface
      *
      * @param RecaptchaInterface $recaptcha
      *
-     * @return RecaptchaProxy|static
+     * @return static
      */
-    public function setRecaptcha(RecaptchaInterface $recaptcha): RecaptchaProxy;
+    public function setRecaptcha(RecaptchaInterface $recaptcha): self;
 }
