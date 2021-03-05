@@ -49,7 +49,7 @@ trait RecaptchaProxy
      *
      * @return static
      */
-    public function setRecaptcha(RecaptchaInterface $recaptcha): RecaptchaProxy
+    public function setRecaptcha(RecaptchaInterface $recaptcha): self
     {
         $this->recaptcha = $recaptcha;
 
