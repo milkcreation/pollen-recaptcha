@@ -201,10 +201,35 @@ class Recaptcha implements RecaptchaInterface
                 $js .= "}";
             }
             $js .= "};";
-            $output = "<script type=\"text/javascript\">{$js}</script>";
-            $output .= "<script type=\"text/javascript\" src=\"https://www.google.com/recaptcha/api.js?hl={$lang}&onload=reCaptchaCallback&render=explicit\" async defer></script>";
+            $js .= "let recaptchaScriptInitialized = false;";
+            $js .= "const recaptchaObserver = new IntersectionObserver(";
+            $js .= "entries => {";
+            $js .= "for(const entry of entries){";
+            $js .= "    if (recaptchaScriptInitialized) {";
+            $js .= "        recaptchaObserver.unobserve(entry.target);";
+            $js .= "        return;";
+            $js .= "    }";
+            $js .= "    if (entry.isIntersecting) {";
+            $js .= "        let recaptchaScript = document.createElement('script');";
+            $js .= "        recaptchaScript.src = 'https://www.google.com/recaptcha/api.js?hl={$lang}&onload=reCaptchaCallback&render=explicit';";
+            $js .= "        recaptchaScript.defer = true;";
+            $js .= "        document.body.appendChild(recaptchaScript);";
+            $js .= "        recaptchaScriptInitialized = true;";
+            $js .= "        console.log('Recaptcha script is initialized');";
+            $js .= "    }";
+            $js .= "}";
+            $js .= "},";
+            $js .= "{";
+            $js .= "root: document.querySelector('.page-wrapper'),";
+            $js .= "rootMargin: \"0px\",";
+            $js .= "threshold: 1.0,";
+            $js .= "}";
+            $js .= ");";
+            foreach ($this->widgets as $id => $params) {
+                $js .= "recaptchaObserver.observe(document.getElementById('{$id}'));";
+            }
 
-            return $output;
+            return "<script type=\"text/javascript\">{$js}</script>";
         }
 
         return '';
