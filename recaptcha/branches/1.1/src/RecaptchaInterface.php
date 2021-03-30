@@ -79,7 +79,7 @@ interface RecaptchaInterface extends
     public function getSiteKey(): ?string;
 
     /**
-     * Récupération de  la réponse à l'issue de la soumission.
+     * Récupération de la réponse à l'issue de la soumission.
      *
      * @return bool
      */
