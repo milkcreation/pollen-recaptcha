@@ -75,10 +75,10 @@ class RecaptchaFormField extends FormFieldDriver implements RecaptchaFormFieldIn
     /**
      * @inheritDoc
      */
-    public function validate(): void
+    public function validate($value = null): void
     {
         if (!$this->recaptchaManager->isValidated()) {
-            throw (new FieldValidateException(__('La saisie de la protection antispam est incorrecte.', 'tify')))
+            throw (new FieldValidateException('La saisie de la protection antispam est incorrecte.'))
                 ->setFormField($this)->setAlias('recaptcha');
         }
     }

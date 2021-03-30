@@ -7,7 +7,7 @@
     "component",
     "recaptcha"
   ],
-  "time": "2021-03-26",
+  "time": "2021-03-30",
   "license": "MIT",
   "authors": [
     {
@@ -42,6 +42,9 @@
     "psr-4": {
       "Pollen\\Recaptcha\\Test\\": "tests"
     }
+  },
+  "suggest": {
+    "pollen-solutions/container" : "Pollen Container Component - PSR-11 ready Dependencies Injection Container."
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

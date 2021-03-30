@@ -47,12 +47,10 @@ trait RecaptchaProxy
      *
      * @param RecaptchaInterface $recaptcha
      *
-     * @return static
+     * @return void
      */
-    public function setRecaptcha(RecaptchaInterface $recaptcha): self
+    public function setRecaptcha(RecaptchaInterface $recaptcha): void
     {
         $this->recaptcha = $recaptcha;
-
-        return $this;
     }
 }
