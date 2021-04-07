@@ -7,7 +7,7 @@
     "component",
     "recaptcha"
   ],
-  "time": "2021-03-30",
+  "time": "2021-04-07",
   "license": "MIT",
   "authors": [
     {
@@ -25,8 +25,6 @@
   "require": {
     "composer/installers": "~1.0",
     "google/recaptcha": "^1.2",
-    "pollen-solutions/field": "^1.0",
-    "pollen-solutions/form": "^1.0",
     "pollen-solutions/http": "^1.0",
     "pollen-solutions/support": "^1.0"
   },
@@ -44,7 +42,9 @@
     }
   },
   "suggest": {
-    "pollen-solutions/container" : "Pollen Container Component - PSR-11 ready Dependencies Injection Container."
+    "pollen-solutions/container" : "Pollen Container Component - PSR-11 ready Dependencies Injection Container.",
+    "pollen-solutions/field": "Pollen Field Component - Collection of form fields.",
+    "pollen-solutions/form": "Pollen Form Component - Forms generator and processor."
   },
   "minimum-stability": "dev",
   "prefer-stable": true,
