@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
-use Psr\Container\ContainerInterface as Container;
+use Pollen\Support\StaticProxy;
 use RuntimeException;
 
 /**
@@ -26,16 +26,14 @@ trait RecaptchaProxy
     public function recaptcha(): RecaptchaInterface
     {
         if ($this->recaptcha === null) {
-            $container = method_exists($this, 'getContainer') ? $this->getContainer() : null;
-
-            if ($container instanceof Container && $container->has(RecaptchaInterface::class)) {
-                $this->recaptcha = $container->get(RecaptchaInterface::class);
-            } else {
-                try {
-                    $this->recaptcha = Recaptcha::getInstance();
-                } catch(RuntimeException $e) {
-                    $this->recaptcha = new Recaptcha();
-                }
+            try {
+                $this->recaptcha = Recaptcha::getInstance();
+            } catch (RuntimeException $e) {
+                $this->recaptcha = StaticProxy::getProxyInstance(
+                    RecaptchaInterface::class,
+                    Recaptcha::class,
+                    method_exists($this, 'getContainer') ? $this->getContainer() : null
+                );
             }
         }
 
