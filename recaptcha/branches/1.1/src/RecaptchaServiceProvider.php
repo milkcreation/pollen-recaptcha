@@ -12,8 +12,6 @@ use Pollen\Container\BaseServiceProvider;
 class RecaptchaServiceProvider extends BaseServiceProvider
 {
     /**
-     * Liste des noms de qualification des services fournis.
-     * {@internal Permet le chargement différé des services qualifié.}
      * @var string[]
      */
     protected $provides = [
