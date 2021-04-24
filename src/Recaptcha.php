@@ -11,23 +11,23 @@ use Pollen\Recaptcha\Field\RecaptchaField;
 use Pollen\Recaptcha\Form\RecaptchaFormField;
 use Pollen\Support\Concerns\BootableTrait;
 use Pollen\Support\Concerns\ConfigBagAwareTrait;
+use Pollen\Support\Concerns\ResourcesAwareTrait;
 use Pollen\Support\Exception\ManagerRuntimeException;
 use Pollen\Support\Proxy\ContainerProxy;
 use Pollen\Support\Proxy\EventProxy;
 use Pollen\Support\Proxy\FieldProxy;
 use Pollen\Support\Proxy\FormProxy;
 use Pollen\Support\Proxy\HttpRequestProxy;
-use Pollen\Support\Filesystem;
 use Psr\Container\ContainerInterface as Container;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
-use RuntimeException;
 
 class Recaptcha implements RecaptchaInterface
 {
     use BootableTrait;
     use ConfigBagAwareTrait;
+    use ResourcesAwareTrait;
     use ContainerProxy;
     use EventProxy;
     use FieldProxy;
@@ -45,12 +45,6 @@ class Recaptcha implements RecaptchaInterface
      * @var ReCaptchaDriver
      */
     private $reCaptchaDriver;
-
-    /**
-     * Chemin vers le répertoire des ressources.
-     * @var string|null
-     */
-    protected $resourcesBaseDir;
 
     /**
      * Liste des widgets déclarés.
@@ -71,6 +65,8 @@ class Recaptcha implements RecaptchaInterface
         if ($container !== null) {
             $this->setContainer($container);
         }
+
+        $this->setResourcesBaseDir(dirname(__DIR__) . '/resources');
 
         if ($this->config('boot_enabled', true)) {
             $this->boot();
@@ -196,9 +192,9 @@ class Recaptcha implements RecaptchaInterface
                     $params = '{}';
                 }
 
-                $js .= "reCaptchaEl['{$id}']=document.getElementById('{$id}');";
-                $js .= "if(typeof(reCaptchaEl['{$id}'])!='undefined' && reCaptchaEl['{$id}']!=null){";
-                $js .= "try{grecaptcha.render('{$id}', {$params});} catch(error){console.log(error);}";
+                $js .= "reCaptchaEl['$id']=document.getElementById('$id');";
+                $js .= "if(typeof(reCaptchaEl['$id'])!='undefined' && reCaptchaEl['$id']!=null){";
+                $js .= "try{grecaptcha.render('$id', $params);} catch(error){console.log(error);}";
                 $js .= "}";
             }
             $js .= "};";
@@ -212,7 +208,7 @@ class Recaptcha implements RecaptchaInterface
             $js .= "    }";
             $js .= "    if (entry.isIntersecting) {";
             $js .= "        let recaptchaScript = document.createElement('script');";
-            $js .= "        recaptchaScript.src = 'https://www.google.com/recaptcha/api.js?hl={$lang}&onload=reCaptchaCallback&render=explicit';";
+            $js .= "        recaptchaScript.src = 'https://www.google.com/recaptcha/api.js?hl=$lang&onload=reCaptchaCallback&render=explicit';";
             $js .= "        recaptchaScript.defer = true;";
             $js .= "        document.body.appendChild(recaptchaScript);";
             $js .= "        recaptchaScriptInitialized = true;";
@@ -227,10 +223,12 @@ class Recaptcha implements RecaptchaInterface
             $js .= "}";
             $js .= ");";
             foreach ($this->widgets as $id => $params) {
-                $js .= "recaptchaObserver.observe(document.getElementById('{$id}'));";
+                $js .= "recaptchaObserver.observe(document.getElementById('$id'));";
             }
 
-            return "<script type=\"text/javascript\">{$js}</script>";
+            return "<!-- Recaptcha Scripts -->" .
+                "<script type=\"text/javascript\">/* <![CDATA[ */$js/* ]]> */</script>" .
+                "<!-- / Recaptcha Scripts -->";
         }
 
         return '';
@@ -311,35 +309,5 @@ class Recaptcha implements RecaptchaInterface
             );
         }
         return $this->reCaptchaDriver;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resources(?string $path = null): string
-    {
-        if ($this->resourcesBaseDir === null) {
-            $this->resourcesBaseDir = Filesystem::normalizePath(
-                realpath(
-                    dirname(__DIR__) . '/resources/'
-                )
-            );
-
-            if (!file_exists($this->resourcesBaseDir)) {
-                throw new RuntimeException('Recaptcha ressources directory unreachable');
-            }
-        }
-
-        return is_null($path) ? $this->resourcesBaseDir : $this->resourcesBaseDir . Filesystem::normalizePath($path);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setResourcesBaseDir(string $resourceBaseDir): RecaptchaInterface
-    {
-        $this->resourcesBaseDir = Filesystem::normalizePath($resourceBaseDir);
-
-        return $this;
     }
 }
