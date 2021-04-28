@@ -6,7 +6,7 @@ namespace Pollen\Recaptcha\Form;
 
 use Pollen\Recaptcha\Contracts\RecaptchaContract;
 use tiFy\Form\FieldDriver;
-use tiFy\Form\FieldValidateException;
+use tiFy\Form\Exception\FieldValidateException;
 
 class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterface
 {
@@ -58,8 +58,8 @@ class RecaptchaFormField extends FieldDriver implements RecaptchaFormFieldInterf
     public function validate(): void
     {
         if (!$this->recaptchaManager->isValidated()) {
-            throw (new FieldValidateException(__('La saisie de la protection antispam est incorrecte.', 'tify')))
-                ->setField($this)->setAlias('recaptcha');
+            throw (new FieldValidateException($this, __('La saisie de la protection antispam est incorrecte.', 'tify')))
+                ->setAlias('recaptcha');
         }
     }
 }
