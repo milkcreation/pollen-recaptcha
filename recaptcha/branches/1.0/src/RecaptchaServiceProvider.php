@@ -28,7 +28,7 @@ class RecaptchaServiceProvider extends BaseServiceProvider
      */
     public function boot()
     {
-        events()->listen(
+        events()->on(
             'wp.booted',
             function () {
                 $this->getContainer()->get(RecaptchaContract::class)->boot();
