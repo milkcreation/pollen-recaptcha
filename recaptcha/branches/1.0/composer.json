@@ -24,7 +24,10 @@
   ],
   "require": {
     "composer/installers": "~1.0",
-    "google/recaptcha": "^1.2"
+    "google/recaptcha": "^1.2",
+    "pollen-solutions/field": "^1.0",
+    "pollen-solutions/http": "^1.0",
+    "pollen-solutions/support": "^1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"
