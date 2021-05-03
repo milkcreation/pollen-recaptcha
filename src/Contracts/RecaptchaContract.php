@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha\Contracts;
 
+use Pollen\Support\Proxy\FieldProxyInterface;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
@@ -12,9 +13,8 @@ use tiFy\Contracts\Support\ParamsBag;
 /**
  * @mixin \tiFy\Support\Concerns\BootableTrait
  * @mixin \tiFy\Support\Concerns\ContainerAwareTrait
- * @mixin \tiFy\Support\Concerns\FieldManagerAwareTrait
  */
-interface RecaptchaContract
+interface RecaptchaContract extends FieldProxyInterface
 {
     /**
      * Récupération de l'instance courante.
