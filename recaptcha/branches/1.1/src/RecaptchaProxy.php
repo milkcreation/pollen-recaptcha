@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
-use Pollen\Support\StaticProxy;
+use Pollen\Support\ProxyResolver;
 use RuntimeException;
 
 /**
@@ -29,7 +29,7 @@ trait RecaptchaProxy
             try {
                 $this->recaptcha = Recaptcha::getInstance();
             } catch (RuntimeException $e) {
-                $this->recaptcha = StaticProxy::getProxyInstance(
+                $this->recaptcha = ProxyResolver::getInstance(
                     RecaptchaInterface::class,
                     Recaptcha::class,
                     method_exists($this, 'getContainer') ? $this->getContainer() : null
