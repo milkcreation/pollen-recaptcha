@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pollen\Recaptcha;
 
 use LogicException;
+use Pollen\Support\Proxy\FieldProxy;
 use RuntimeException;
 use Pollen\Recaptcha\Contracts\RecaptchaContract;
 use Pollen\Recaptcha\Field\RecaptchaField;
@@ -16,7 +17,6 @@ use ReCaptcha\RequestMethod\SocketPost as ReCaptchaSocket;
 use tiFy\Contracts\Filesystem\LocalFilesystem;
 use tiFy\Support\Concerns\BootableTrait;
 use tiFy\Support\Concerns\ContainerAwareTrait;
-use tiFy\Support\Concerns\FieldManagerAwareTrait;
 use tiFy\Support\Proxy\Form;
 use tiFy\Support\ParamsBag;
 use tiFy\Support\Proxy\Request;
@@ -26,7 +26,7 @@ class Recaptcha implements RecaptchaContract
 {
     use BootableTrait;
     use ContainerAwareTrait;
-    use FieldManagerAwareTrait;
+    use FieldProxy;
 
     /**
      * Instance de la classe.
@@ -117,10 +117,10 @@ class Recaptcha implements RecaptchaContract
                 );
             }
 
-            $this->fieldManager()->register(
+            $this->field()->register(
                 'recaptcha',
                 $this->containerHas(RecaptchaField::class)
-                    ? RecaptchaField::class : new RecaptchaField($this, $this->fieldManager())
+                    ? RecaptchaField::class : new RecaptchaField($this, $this->field())
             );
 
             Form::setFieldDriver(

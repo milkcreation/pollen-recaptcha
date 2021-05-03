@@ -6,8 +6,8 @@ namespace Pollen\Recaptcha\Field;
 
 use Exception;
 use Pollen\Recaptcha\Contracts\RecaptchaContract;
-use tiFy\Field\Contracts\FieldContract;
-use tiFy\Field\FieldDriver;
+use Pollen\Field\FieldDriver;
+use Pollen\Field\FieldManagerInterface;
 
 class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
 {
@@ -19,9 +19,9 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
 
     /**
      * @param RecaptchaContract $recaptchaManager
-     * @param FieldContract $fieldManager
+     * @param FieldManagerInterface $fieldManager
      */
-    public function __construct(RecaptchaContract $recaptchaManager, FieldContract $fieldManager)
+    public function __construct(RecaptchaContract $recaptchaManager, FieldManagerInterface $fieldManager)
     {
         $this->recaptchaManager = $recaptchaManager;
 
