@@ -78,8 +78,9 @@ class RecaptchaFormField extends FormFieldDriver implements RecaptchaFormFieldIn
     public function validate($value = null): void
     {
         if (!$this->recaptchaManager->isValidated()) {
-            throw (new FieldValidateException('La saisie de la protection antispam est incorrecte.'))
-                ->setFormField($this)->setAlias('recaptcha');
+            throw new FieldValidateException(
+                $this, 'Invalid Recaptcha response.', ['recaptcha']
+            );
         }
     }
 }
