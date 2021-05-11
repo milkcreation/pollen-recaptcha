@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Pollen\Recaptcha;
 
+use Pollen\Container\BootableServiceProvider;
 use Pollen\Field\FieldManagerInterface;
 use Pollen\Recaptcha\Field\RecaptchaField;
 use Pollen\Recaptcha\Form\RecaptchaFormField;
-use Pollen\Container\BaseServiceProvider;
 
-class RecaptchaServiceProvider extends BaseServiceProvider
+class RecaptchaServiceProvider extends BootableServiceProvider
 {
     /**
      * @var string[]
