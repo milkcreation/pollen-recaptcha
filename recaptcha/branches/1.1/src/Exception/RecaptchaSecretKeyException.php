@@ -8,9 +8,14 @@ use Throwable;
 
 class RecaptchaSecretKeyException extends RecaptchaConfigException
 {
-    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
+    /**
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
+     */
+    public function __construct(string $message = '', int $code = 0, Throwable $previous = null)
     {
-        if ($message === "") {
+        if ($message === '') {
             $message = sprintf(
                 'Recaptcha v2 Secret Key required, please create and configure : %s',
                 $this->onlineConfig

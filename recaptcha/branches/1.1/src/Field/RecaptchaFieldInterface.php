@@ -10,7 +10,7 @@ use Pollen\Recaptcha\RecaptchaInterface;
 interface RecaptchaFieldInterface extends FieldDriverInterface
 {
     /**
-     * Instance du gestionnaire reCaptcha
+     * Recaptcha manager instance.
      *
      * @return RecaptchaInterface
      */

@@ -13,10 +13,10 @@ use Pollen\Recaptcha\RecaptchaInterface;
 class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
 {
     /**
-     * Instance du gestionnaire.
+     * Recaptcha manager instance.
      * @var RecaptchaInterface
      */
-    protected $recaptchaManager;
+    protected RecaptchaInterface $recaptchaManager;
 
     /**
      * @param RecaptchaInterface $recaptchaManager
@@ -52,43 +52,43 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
     {
         return [
             /**
-             * @var array $attrs Attributs HTML du champ.
+             * @var array $attrs HTML Attributes.
              */
             'attrs'     => [],
             /**
-             * @var string $after Contenu placé après le champ.
+             * @var string $after After field HTML contents.
              */
             'after'     => '',
             /**
-             * @var string $before Contenu placé avant le champ.
+             * @var string $before Before field HTML contents.
              */
             'before'    => '',
             /**
-             * @var array $viewer Liste des attributs de configuration du pilote d'affichage.
+             * @var array $viewer View engine params.
              */
             'viewer'    => [],
             /**
-             * @var string $name Clé d'indice de la valeur de soumission du champ
+             * @var string $name Field form submit name.
              */
             'name'      => '',
             /**
-             * @var string $value Valeur courante de soumission du champ.
+             * @var string $value Field value.
              */
             'value'     => '',
             /**
-             * @var string $sitekey Clé publique. Optionnel si l'API $recaptcha est active.
+             * @var string $sitekey Site key. Use global Recaptcha Manager site key as default.
              */
             'sitekey'   => '',
             /**
-             * @var string $secretkey Clé publique. Optionnel si l'API $recaptcha est active.
+             * @var string $secretkey Secret key. Use global Recaptcha Manager secret key as default.
              */
             'secretkey' => '',
             /**
-             * @var string $theme Couleur d'affichage du captcha. light|dark.
+             * @var string $theme Recaptcha theme color. light|dark.
              */
             'theme'     => 'light',
             /**
-             * @var int $tabindex Indice du champ dans le formulaire
+             * @var int $tabindex Field tab index.
              */
             'tabindex'  => 0,
         ];
@@ -126,6 +126,8 @@ class RecaptchaField extends FieldDriver implements RecaptchaFieldInterface
                 'theme'   => $this->pull('theme'),
             ]
         );
+
+        $this->recaptchaManager()->assetsAutoloader();
 
         return parent::render();
     }

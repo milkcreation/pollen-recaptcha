@@ -13,14 +13,14 @@ use Pollen\Recaptcha\RecaptchaInterface;
 class RecaptchaFormField extends FormFieldDriver implements RecaptchaFormFieldInterface
 {
     /**
-     * Instance du gestionnaire.
+     * Recaptcha manager instance.
      * @var RecaptchaInterface
      */
-    private $recaptchaManager;
+    private RecaptchaInterface $recaptchaManager;
 
     /**
-     * Liste des attributs de support.
-     * @var array
+     * List of supports attributes.
+     * @var string[]
      */
     protected $supports = ['label', 'request', 'wrapper'];
 
@@ -77,7 +77,7 @@ class RecaptchaFormField extends FormFieldDriver implements RecaptchaFormFieldIn
      */
     public function validate($value = null): void
     {
-        if (!$this->recaptchaManager->isValidated()) {
+        if (!$this->recaptchaManager->isResponseValid()) {
             throw new FieldValidateException(
                 $this, 'Invalid Recaptcha response.', ['recaptcha']
             );

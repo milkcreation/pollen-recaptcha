@@ -7,14 +7,14 @@ namespace Pollen\Recaptcha;
 interface RecaptchaProxyInterface
 {
     /**
-     * Instance du gestionnaire reCaptcha.
+     * Resolve Recaptcha instance.
      *
      * @return RecaptchaInterface
      */
     public function recaptcha(): RecaptchaInterface;
 
     /**
-     * Définition du gestionnaire reCaptcha.
+     * Set Recaptcha instance.
      *
      * @param RecaptchaInterface $recaptcha
      *
