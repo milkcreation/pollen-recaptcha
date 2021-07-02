@@ -13,13 +13,13 @@ use RuntimeException;
 trait RecaptchaProxy
 {
     /**
-     * Instance du gestionnaire reCaptcha.
-     * @var RecaptchaInterface
+     * Recaptcha instance.
+     * @var RecaptchaInterface|null
      */
-    private $recaptcha;
+    private ?RecaptchaInterface $recaptcha = null;
 
     /**
-     * Instance du gestionnaire reCaptcha.
+     * Resolve Recaptcha instance.
      *
      * @return RecaptchaInterface
      */
@@ -41,7 +41,7 @@ trait RecaptchaProxy
     }
 
     /**
-     * Définition du gestionnaire reCaptcha.
+     * Set Recaptcha instance.
      *
      * @param RecaptchaInterface $recaptcha
      *

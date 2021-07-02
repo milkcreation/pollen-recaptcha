@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Pollen\Recaptcha;
 
 use Exception;
+use Pollen\Asset\AssetManagerInterface;
+use Pollen\Asset\AssetQueue;
+use Pollen\Asset\Assets\InlineAsset;
+use Pollen\Event\TriggeredEvent;
 use Pollen\Recaptcha\Exception\RecaptchaSecretKeyException;
 use Pollen\Recaptcha\Exception\RecaptchaSiteKeyException;
 use Pollen\Recaptcha\Field\RecaptchaField;
@@ -35,22 +39,28 @@ class Recaptcha implements RecaptchaInterface
     use HttpRequestProxy;
 
     /**
-     * Instance principale.
+     * Recaptcha main instance.
      * @var static|null
      */
-    private static $instance;
+    private static ?RecaptchaInterface $instance = null;
 
     /**
-     * Instance du pilote associé.
-     * @var ReCaptchaDriver
+     * Recaptcha driver instance.
+     * @var ReCaptchaDriver|null
      */
-    private $reCaptchaDriver;
+    private ?ReCaptchaDriver $reCaptchaDriver = null;
 
     /**
-     * Liste des widgets déclarés.
+     * Assets autoload indicator.
+     * @var bool
+     */
+    protected bool $assetsAutoloaded = false;
+
+    /**
+     * List of registered widgets.
      * @type array
      */
-    protected $widgets = [];
+    protected array $widgets = [];
 
     /**
      * @param array $config
@@ -68,9 +78,7 @@ class Recaptcha implements RecaptchaInterface
 
         $this->setResourcesBaseDir(dirname(__DIR__) . '/resources');
 
-        if ($this->config('boot_enabled', true)) {
-            $this->boot();
-        }
+        $this->boot();
 
         if (!self::$instance instanceof static) {
             self::$instance = $this;
@@ -78,7 +86,7 @@ class Recaptcha implements RecaptchaInterface
     }
 
     /**
-     * Récupération de l'instance principale.
+     * Get Recaptcha main instance.
      *
      * @return static
      */
@@ -98,6 +106,44 @@ class Recaptcha implements RecaptchaInterface
         $this->widgets[$id] = $params;
 
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function assetsAutoloader(): void
+    {
+        if (!$this->assetsAutoloaded &&
+            ($this->config('asset.autoloader', true) === true) &&
+            ($jsScripts = $this->getJsScripts())
+        ) {
+            if (defined('WPINC') && function_exists('add_action')) {
+                add_action(
+                    'wp_print_footer_scripts',
+                    function () use ($jsScripts) {
+                        echo "<!-- Recaptcha Scripts -->" .
+                            "<script type=\"text/javascript\">/* <![CDATA[ */$jsScripts/* ]]> */</script>" .
+                            "<!-- / Recaptcha Scripts -->";
+                    }
+                );
+            }
+
+            $this->event()->one(
+                'asset.handle-head.before',
+                function (TriggeredEvent $event, AssetManagerInterface $assetManager) use ($jsScripts) {
+                    $assetManager->enqueueJs(
+                        new InlineAsset('recaptcha-js', $jsScripts),
+                        true,
+                        [],
+                        AssetQueue::LOW
+                    )
+                        ->setBefore('<!-- Recaptcha Scripts -->')
+                        ->setAfter('<!-- / Recaptcha Scripts -->');
+                }
+            );
+
+            $this->assetsAutoloaded = true;
+        }
     }
 
     /**
@@ -151,15 +197,15 @@ class Recaptcha implements RecaptchaInterface
     {
         return [
             /**
-             * @var string $sitekey Recaptcha v2 Site key (required)
+             * @var string|null $sitekey Recaptcha v2 Site key (required).
              */
             'sitekey'   => null,
             /**
-             * @var string $secretkey Recaptcha v2 Secret key (required)
+             * @var string|null $secretkey Recaptcha v2 Secret key (required).
              */
             'secretkey' => null,
             /**
-             * @var string $locale format ISO 15897.
+             * @var string|null $locale Locale in ISO 15897 format. en_US if null.
              */
             'locale'    => null,
         ];
@@ -212,7 +258,9 @@ class Recaptcha implements RecaptchaInterface
             $js .= "        recaptchaScript.defer = true;";
             $js .= "        document.body.appendChild(recaptchaScript);";
             $js .= "        recaptchaScriptInitialized = true;";
-            $js .= "        console.log('Recaptcha script is initialized');";
+            if ($this->config('debug', false) === true) {
+                $js .= "        console.log('Recaptcha script is initialized');";
+            }
             $js .= "    }";
             $js .= "}";
             $js .= "},";
@@ -226,9 +274,7 @@ class Recaptcha implements RecaptchaInterface
                 $js .= "recaptchaObserver.observe(document.getElementById('$id'));";
             }
 
-            return "<!-- Recaptcha Scripts -->" .
-                "<script type=\"text/javascript\">/* <![CDATA[ */$js/* ]]> */</script>" .
-                "<!-- / Recaptcha Scripts -->";
+            return $js;
         }
 
         return '';
@@ -291,15 +337,13 @@ class Recaptcha implements RecaptchaInterface
     /**
      * @inheritDoc
      */
-    public function isValidated(): bool
+    public function isResponseValid(): bool
     {
         return $this->getHandleResponse()->isSuccess();
     }
 
     /**
-     * Instance du pilote associé.
-     *
-     * @return ReCaptchaDriver
+     * @inheritDoc
      */
     public function reCaptchaDriver(): ReCaptchaDriver
     {
@@ -308,6 +352,7 @@ class Recaptcha implements RecaptchaInterface
                 $this->config('secretkey'), (ini_get('allow_url_fopen') ? null : new ReCaptchaSocket())
             );
         }
+
         return $this->reCaptchaDriver;
     }
 }

@@ -12,6 +12,8 @@ use Pollen\Support\Proxy\EventProxyInterface;
 use Pollen\Support\Proxy\FieldProxyInterface;
 use Pollen\Support\Proxy\FormProxyInterface;
 use Pollen\Support\Proxy\HttpRequestProxyInterface;
+use Pollen\Recaptcha\Exception\RecaptchaSiteKeyException;
+use Pollen\Recaptcha\Exception\RecaptchaSecretKeyException;
 use ReCaptcha\ReCaptcha as ReCaptchaDriver;
 use ReCaptcha\Response as ReCaptchaResponse;
 
@@ -26,69 +28,76 @@ interface RecaptchaInterface extends
     HttpRequestProxyInterface
 {
     /**
-     * Déclaration d'un widget de rendu.
+     * Add a widget render.
      *
-     * @param string $id Identifiant de qualification HTML de l'élément porteur.
-     * @param array $params Liste des paramètres.
+     * @param string $id
+     * @param array $params
      *
      * @return static
      */
     public function addWidgetRender(string $id, array $params = []): RecaptchaInterface;
 
     /**
-     * Initialisation.
+     * Assets autoloading.
+     *
+     * @return void
+     */
+    public function assetsAutoloader(): void;
+
+    /**
+     * Booting.
      *
      * @return static
      */
     public function boot(): RecaptchaInterface;
 
     /**
-     * Vérification de la configuration.
+     * Checking the validity of the configuration.
      *
-     * @return true
+     * @return bool
      *
-     * @throws \Pollen\Recaptcha\Exception\RecaptchaSiteKeyException
-     * @throws \Pollen\Recaptcha\Exception\RecaptchaSecretKeyException
+     * @throws RecaptchaSiteKeyException
+     * @throws RecaptchaSecretKeyException
      */
     public function checkConfig(): bool;
 
     /**
-     * Récupération de la réponse HTTP à l'issue de la soumission.
+     * Get Handle HTTP response.
      *
      * @return ReCaptchaResponse
      */
     public function getHandleResponse(): ReCaptchaResponse;
 
     /**
-     * Récupération des scripts JS.
+     * Get Js scripts.
      *
      * @return string
      */
     public function getJsScripts(): string;
 
     /**
-     * Récupération de la langue.
+     * Get language.
      *
      * @return string
      */
     public function getLanguage(): string;
 
     /**
-     * Récupération de la clé publique.
+     * Get site key.
      *
      * @return string|null
      */
     public function getSiteKey(): ?string;
 
     /**
-     * Récupération de la réponse à l'issue de la soumission.
+     * Check if HTTP Response is valid.
      *
      * @return bool
      */
-    public function isValidated(): bool;
+    public function isResponseValid(): bool;
 
     /**
-     * Instance du pilote associé.
+     * Recaptcha driver instance.
      *
      * @return ReCaptchaDriver
      */

@@ -11,5 +11,5 @@ class RecaptchaConfigException extends LogicException
     /**
      * @var string
      */
-    protected $onlineConfig = 'https://www.google.com/recaptcha/about/';
+    protected string $onlineConfig = 'https://www.google.com/recaptcha/about/';
 }

@@ -56,7 +56,7 @@ echo <<< HTML
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Recaptcha test</title>
 </head>
 <body>
 $form
@@ -120,7 +120,7 @@ return [
      */
     'secretkey' => '=====secretkey=====',
     /**
-     * @var string|null $locale format ISO 15897.
+     * @var string|null $locale locale in ISO 15897 format.
      */
     'locale'    => null,
 ];
