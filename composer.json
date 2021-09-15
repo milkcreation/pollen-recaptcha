@@ -1,24 +1,18 @@
 {
   "name": "pollen-solutions/recaptcha",
   "description": "Pollen Recaptcha Component - Recaptcha integrator",
-  "homepage": "https://www.presstify.com/pollen-solutions/recaptcha/",
+  "homepage": "https://github.com/milkcreation/pollen-recaptcha.git",
   "keywords": [
     "pollen-solutions",
     "component",
     "recaptcha"
   ],
-  "time": "2021-06-02",
+  "time": "2021-09-15",
   "license": "MIT",
   "authors": [
     {
       "name": "Jordy Manner",
       "email": "jordy@presstify.com"
-    }
-  ],
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://composer.presstify.com/pollen-solutions/"
     }
   ],
   "require": {
